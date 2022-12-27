@@ -1,0 +1,159 @@
+---
+title: "Practical Exam I"
+author: Raymond Blaha
+linkcolor: red
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  word_document:
+    toc: yes
+    toc_depth: 4
+fontsize: 11pt
+urlcolor: red
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# [1.] The LifeCycleSavings dataset collects relationships between personal savings, per-capita disposable income, and other demographic data.  Using either a for loop, while loop, or apply:
+
+1.  For each column, print the average and standard deviation of measurements.
+2.  For each row, print the name of the country if dpi, sr, or both are above their respective median values.
+
+```{r}
+
+head(LifeCycleSavings)
+rownames(LifeCycleSavings)
+
+for(i in 1: ncol(LifeCycleSavings)) {  
+  print(paste("Average of", colnames(LifeCycleSavings)[i], "is", mean(LifeCycleSavings[,i]))) 
+  print(paste("Standard Deviation of", colnames(LifeCycleSavings)[i], "is", sd(LifeCycleSavings[,i])))
+}
+
+for(i in 1: nrow(LifeCycleSavings)){
+  if(LifeCycleSavings[i, "dpi"] > median(LifeCycleSavings[, "dpi"]) & LifeCycleSavings[i, "sr"] > median(LifeCycleSavings[, "sr"])){
+    print(rownames(LifeCycleSavings)[i])
+  }
+}
+
+
+```
+
+
+# [2.] In R and most other languages, processing steps and code paths are often tied to data type. For the CO2 dataset (see ?CO2):
+
+1. In code, determine the overall proportion of values stored as numeric ("num") or character ("chr") data types.
+2. To a subset of the dataset containing only numeric columns, apply the cor() function, specifying Spearman correlation as the method.
+3. Bonus: Ensure that the methods in 1. and 2. would work as expected even if the dataset contained missing values.
+
+```{r}
+head(CO2)
+rownames(CO2)
+
+library(dplyr)
+
+num <- unlist(lapply(CO2, is.numeric)) / ncol(CO2)
+num
+
+chr <- unlist(lapply(CO2, is.character)) / ncol(CO2)
+chr
+
+cor(CO2 %>% select_if(is.numeric), method = "spearman")
+
+
+
+
+
+
+```
+
+
+# [3.] We would like to validate the ranges and categories of a manually entered dataset. We will use the built-in ToothGrowth dataset as an example (?ToothGrowth), which follows a study of the effects of vitamin C on tooth growth in guinea pigs.
+
+1. Determine the proportion of observations where tooth lengths are outside of the range of 7 to 27.
+2. Write code that would identify any values of the treatment (supp) that are not in the set of expected values (vitamin C: "VC", Orange Juice: "OJ"). 
+3. Show that the code for part 2 works by modifying a copy of the original dataset. (If you overwrite the original copy by mistake, you can reload it with data(ToothGrowth).)
+
+```{r}
+
+library(dplyr)
+
+head(ToothGrowth)
+rownames(ToothGrowth)
+
+prop_toothgrowth <- ToothGrowth$len[ToothGrowth$len < 7 | ToothGrowth$len > 27] / nrow(ToothGrowth)
+prop_toothgrowth
+
+supp <- filter(ToothGrowth, supp != "VC" | supp != "OJ", len< 7 | len > 27)
+supp
+
+ToothGrowth1 <- df %>% filter(supp != "VC" | supp != "OJ", len< 7 | len > 27) ##Getting an error here. 
+
+
+```
+
+
+# [4.] For the mtcars dataset (?mtcars), 
+
+1. Collect a random sample of 20 rows/cars.
+2. Summarize the number of cars for each combination of cylinder, gear, and am values.
+
+```{r}
+
+head(mtcars)
+rownames(mtcars)
+
+sample <- mtcars[sample(nrow(mtcars), 20), ]
+sample
+
+mtcars %>% group_by(cyl, gear, am) %>% summarise(n = n())
+
+
+
+```
+
+
+# [5.] Write a function that accepts a data frame and two column numbers as input, and returns the data frame with a new column that concatenates the values in the two columns indicated. These should be separated by a space, such that 3 and 4 become "3 4", or similar for character values.
+
+```{r}
+
+
+for(i in 1: ncol(data.frame)) {
+  for(j in 1: ncol(data.frame)) {
+    if(i != j) {
+      data.frame[, paste(i, j)] <- paste(data.frame[, i], data.frame[, j])
+    }
+  }
+}
+
+## I do not think this is right, but giving it my best shot.
+
+
+```
+
+
+# [6.] The poliscidata package contains functions and datasets for studies in political science. The world dataset from this package is hosted on Canvas as "World_dataset.txt". Perform the following:
+
+1.  Download "World_dataset.txt" from Canvas and read it into a new variable, "world".
+2.  Within this dataset, "dem_score14" represents a scoring of openness in democratic institutions in each country from The Econonomist magazine in 2014. Summarize the maximum and minimum values of this score for each level of dem_level4.
+3.  Bonus: Do this for each unique combination of values in dem_level4 and another categorical variable of your choice, and using methods from dplyr.
+
+```{r}
+
+world <- read.table("/Users/raymondblahajr/Downloads/World_data.txt", header = TRUE, sep = "\t") 
+
+world %>% group_by(dem_level4) %>% summarise(max = max(dem_score14), min = min(dem_score14))
+
+world %>% group_by(dem_level4, unions) %>% summarise(max = max(dem_score14), min = min(dem_score14))
+
+
+
+
+```
+
+

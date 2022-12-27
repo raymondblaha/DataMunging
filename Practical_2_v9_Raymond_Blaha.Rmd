@@ -1,0 +1,387 @@
+---
+title: "Practical Exam III"
+author: [Enter name here]
+linkcolor: red
+output:
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: yes
+  word_document:
+    toc: yes
+    toc_depth: 4
+fontsize: 11pt
+urlcolor: red
+editor_options: 
+  chunk_output_type: console
+---
+
+On this exam there will be two questions investigating trends in data science using the yearly Machine Learning and Data Science survey from Kaggle ("kaggle_survey_2020_responses.csv" posted on Canvas, with kaggle_survey_2020_answer_choices.pdf for reference), followed by four questions on broader methods for exploratory analysis.
+
+Wherever possible, illustrate your answers with exploratory visualizations, summaries, tables, and/or brief descriptions. 
+
+For the first two questions, the first chunk below may help to organize the data and show the correspondence between question text and column names. The ml.part data frame is a subset of ml.full containing single-column categorical responses.
+
+```{r}
+
+# Setup: Check for and install packages as needed
+c("dplyr", "ggplot2", "tidyverse", "nycflights13", "beeswarm", "vioplot") %in% installed.packages()[,1]
+
+# install.packages("dplyr")
+# install.packages("ggplot2")
+# install.packages("tidyverse")
+# install.packages("nycflights13")
+# install.packages("beeswarm")
+# install.packages("vioplot")
+# install.packages("ggplot2")
+
+
+
+```
+
+
+```{r}
+
+# Install and load any required packages:
+library(tidyverse)
+library(reshape2)
+library(DataExplorer)
+
+# Identify categorical columns
+ct.cols <- c("Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q8", "Q11",
+             "Q13", "Q15", "Q20", "Q21", "Q22", "Q24", "Q25", 
+             "Q30", "Q32", "Q38")
+
+# Read dataset
+ml.full <- read.csv("/Users/raymondblahajr/Downloads/kaggle_survey_2020_responses.csv")
+
+# Summarize question vs. column correspondence
+ml.full.qs <- data.frame(colnames(ml.full))
+rownames(ml.full.qs) <- ml.full[1, ]
+
+# Remove question row, factorize
+ml.full <- data.frame(ml.full[-1,])
+ml.full <- ml.full %>% mutate_if(is.character, as.factor)
+
+# Subset to categorical columns
+ml.part    <- ml.full    %>% select(all_of(ct.cols))
+ml.part.qs <- ml.full.qs %>% filter(colnames.ml.full. %in% ct.cols)
+
+# Uncomment to check dataset and questions
+# View(ml.full)
+# View(ml.full.qs)
+# View(ml.part.qs)
+```
+
+# [1.] What relationships exist between the time spent on survey responses (Q1), primary job descriptions (Q5), and primary processing tools (Q38)?
+
+```{r}
+
+str(ml.part)
+
+# Create a table of counts for each combination of Q1 and Q5
+ml.part %>% 
+  group_by(Q1, Q5) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+
+# Create a table of counts for each combination of Q1 and Q38
+ml.part %>% 
+  group_by(Q1, Q38) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+# Create a table of counts for each combination of Q5 and Q38
+ml.part %>% 
+  group_by(Q5, Q38) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+# Create a table of counts for each combination of Q1, Q5, and Q38
+ml.part %>% 
+  group_by(Q1, Q5, Q38) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+
+# Create a plot that shows the relationship between Q1 and Q5
+
+ggplot(ml.part, aes(x = Q1, fill = Q5)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Time spent on survey responses", y = "Count", title = "Time spent on survey responses vs. primary job descriptions") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+# Create a plot that shows the relationship between Q1 and Q38
+
+ggplot(ml.part, aes(x = Q1, fill = Q38)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Time spent on survey responses", y = "Count", title = "Time spent on survey responses vs. primary processing tools") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+# Create a plot that shows the relationship between Q5 and Q38
+
+ggplot(ml.part, aes(x = Q5, fill = Q38)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Primary job descriptions", y = "Count", title = "Primary job descriptions vs. primary processing tools") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+# Create a plot that shows the relationship between Q1, Q5, and Q38
+
+ggplot(ml.part, aes(x = Q1, fill = Q5)) +
+  geom_bar() +
+  facet_wrap(~Q38, ncol = 1) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Time spent on survey responses", y = "Count", title = "Time spent on survey responses vs. primary job descriptions vs. primary processing tools") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+
+```
+
+
+# [2.] Create your own question to ask and answer using this dataset.
+
+```{r}
+
+# What is the relationship between Q4 and Q11
+
+# Create a table of counts for each combination of Q4 and Q11
+ml.part %>% 
+  group_by(Q4, Q11) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+# Create a plot that shows the relationship between Q4 and Q11
+
+ggplot(ml.part, aes(x = Q4, fill = Q11)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Primary tool used at work or school", y = "Count", title = "Primary tool used at work or school vs. primary tool used for personal projects") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+# Maybe come back to this.
+
+```
+
+
+# [3.] Exploratory visualization principles
+
+Three plots depicting the distribution of price per cut category for a subset of the ggplot2 diamonds dataset are shown below. For these:
+
+a. Briefly discuss how these plots align (or fail to align) to the principles for clear data display.
+b. Make two modifications to one of these plots to improve the presentation.
+
+```{r}
+
+# install.packages("beeswarm")
+# install.packages("vioplot")
+# install.packages("ggplot2")
+library(beeswarm)
+library(vioplot)
+library(ggplot2)
+
+set.seed(1234)
+diam.1k <- diamonds[sample(nrow(diamonds), 1000),]
+
+# Set plot window layout:
+par(mfrow=c(3,1), mar = c(2,2,0.2,0))
+
+# 1. 
+boxplot(diam.1k$price ~ diam.1k$cut, ylim=c(500, 12000))
+
+# A. The boxplot is a great way to show the distribution of the data. It shows outliers that might be occuring in each categoical variable. Finally, it shows the median and the interquartile range.
+# B. I would not really change this graph too much. It is simple and clean. 
+
+# 2.
+beeswarm(diam.1k$price ~ diam.1k$cut, corral = "wrap" , pch = 16, cex = 0.5, ylim=c(500, 12000), col = "blue", bg = "black", lwd = 0.5)
+
+# A. The beeswarm plot is a great way to show the distribution of the data.
+# B. What is not clear about this particular graph are the outliers. I think it might also be missing some color. It also does not show the median unlike the violin plot. Finally, I think the distrubtion for the catigories are encroaching on each other.
+
+# 3. 
+vioplot(diam.1k$price ~ diam.1k$cut, col="grey30")
+
+#A. The violin is very nice regarding the shape, distribution, outliers, and median. In this graph the spacing is also perfect between the different categotrical variables. 
+#B. I would not change this graph. The impliamentation of grayscale is a good touch. 
+
+
+# Reset plot layout to defaults
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+
+
+```
+
+
+# [4.] Exploratory analysis
+
+The flights dataset in the nycflights13 package contains a summary of all flights leaving New York City in 2013. What relationships appear to exist between departure delays (dep_delay) and month? Does this change for different times of day? Create a plot or summary to examine these relationships.
+
+Note: This dataset has 336,776 rows and 19 columns, so use the flights.1k subset created below to avoid freezes for the remaining plots.
+
+```{r}
+
+# Package setup
+# install.packages("nycflights13")
+library(nycflights13)
+head(flights)
+# ?flights
+
+# Create subset for plot testing
+set.seed(1234)
+flights.1k <- flights[sample(nrow(flights), 1000),]
+
+# Create a plot that shows the relationship between dep_delay and month
+
+ggplot(flights.1k, aes(x = month, fill = dep_delay)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Month", y = "Count", title = "Month vs. departure delay") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+# Seems like there is a relationship between the month and departure delay. It is binomal in nature. Where March and September have the most departure delays.
+
+# Create a plot that shows the relationship between dep_delay and hour
+
+ggplot(flights.1k, aes(x = hour, fill = dep_delay)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Hour", y = "Count", title = "Hour vs. departure delay") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "bottom")
+
+
+# It seems like there is slight relationship between the hour an departure delay. Where 9am is the highest and the spikes again around 5pm. The typical rush hours.
+
+
+```
+
+# [5.] Complex visualizations in ggplot2
+
+Preferably with ggplot2, create a visualization of the flights.1k dataset (defined above) that summarizes information on as many variables as possible simultaneously. For this question, consider clear interpretability and good design optional. Bonus: Make some aspect of the visualization interactive.
+
+```{r}
+
+# Create a 3D plot that shows the relationship between dep_delay, hour, and month
+
+library(plotly)
+
+sample_n(flights.1k, 1000) %>%
+  plot_ly(x = ~month, y = ~hour, z = ~dep_delay, color = ~dep_delay, type = "scatter3d", mode = "markers", marker = list(size = 2, opacity = 0.8)) %>%
+  layout(scene = list(xaxis = list(title = "Month"),
+                      yaxis = list(title = "Hour"),
+                      zaxis = list(title = "Departure Delay")))
+```
+
+
+# [5.] Using the discussion at https://stackoverflow.com/questions/1299871, connect the origin and destination (dest) airport columns in the flights dataset from the nycflights13 package to their latitude and longitudes, which are provided in the airports dataset. This should create a merged dataset that adds airport names to flights or flights.1k.
+
+Bonus: Create a map that links origin and destination for 50 arbitrarily selected flights. (Hint: the leaflet package can produce maps from providers that do not require an API key for map downloads.)
+
+```{r}
+
+# Package setup
+
+# install.packages("nycflights13")
+# install.packages("leaflet")
+
+library(nycflights13)
+library(leaflet)
+
+# Create subset for plot testing
+
+set.seed(1234)
+flights.1k <- flights[sample(nrow(flights), 1000),]
+
+# Merge the flights.1k dataset with the airports dataset
+
+flights.1k <- merge(flights.1k, airports, by.x = "origin", by.y = "faa")
+flights.1k <- merge(flights.1k, airports, by.x = "dest", by.y = "faa")
+
+# Create a map that links origin and destination for 50 arbitrarily selected flights
+
+flights.1k %>%
+  sample_n(50) %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolylines(lng = ~c(lon.x, lon.y), lat = ~c(lat.x, lat.y), color = "red", weight = 1, opacity = 0.8)
+
+
+
+```
+
+
+## [6.] EDA automation
+
+First, read the "nationwidechildrens.org_clinical_patient_hnsc.txt" dataset into a new variable, hnsc.df. treating either "[Not Available]" or all bracketed values (like "[Not Applicable]", etc.) as NAs.
+
+Then, using the DataExplorer or finalfit package, produce a visual summary of the combinations of missingness per column. Ideally, focus this on columns with 10% to 90% missing values. Briefly describe any trends you observe in columns that tend to be missing together.
+
+```{r}
+
+# install.packages("DataExplorer")
+# install.packages("finalfit")
+
+library(DataExplorer)
+library(finalfit)
+
+hnsc.df <- read.table("/Users/raymondblahajr/Downloads/nationwidechildrens.org_clinical_patient_hnsc.txt", sep = "\t", na.strings = c("[Not Available]", "\\[.*\\]"))
+
+head(hnsc.df)
+
+# Create a visual summary of the combinations of missingness per column
+
+# DataExplorer
+
+plot_missing(hnsc.df)
+
+# finalfit
+
+finalfit::plot_missing(hnsc.df)
+
+# It seems like that the dataset is extermely sparse. There are a lot of missing values. It would require a great deal of cleaning to start to analyzie the other half of the data. However, if you would to use this dataset you could use about half of the data without cleaning because the ratings are good in green.  
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
